@@ -155,4 +155,26 @@ The Covered Call Strategist agent currently works via CLI. This feature adds a m
 
 ---
 
+## Implementation Status
+
+### Phase 1: Telegram Bot - COMPLETE ✅
+
+**Files Created:**
+- `src/telegram_bot/__init__.py` - Package init
+- `src/telegram_bot/bot.py` - Bot application and webhook processing
+- `src/telegram_bot/handlers.py` - Message handlers (start, help, clear, message)
+- `src/telegram_bot/firestore_client.py` - Firestore operations (users, conversations)
+- `src/telegram_bot/rate_limiter.py` - Token bucket rate limiter
+- `cloud_function/main.py` - GCP Cloud Function entry point
+- `cloud_function/requirements.txt` - Cloud Function dependencies
+- `scripts/run_local.py` - Local development runner
+- `scripts/add_user.py` - Add users to allowlist
+- `scripts/deploy.sh` - Deployment script
+- `scripts/set_webhook.sh` - Webhook configuration script
+
+**Deployment Instructions:**
+See README section below.
+
+---
+
 *Generated: 2026-01-04*

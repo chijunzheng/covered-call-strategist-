@@ -326,31 +326,44 @@ Allocation varies by sentiment:
 covered-call-strategist/
 ├── .env.example
 ├── .gitignore
+├── main.py                  # Cloud Function entry point
 ├── progress.md              # This file
 ├── pytest.ini
 ├── requirements.txt
 ├── README.md
+├── scripts/
+│   ├── run_local.py         # Local development (polling mode)
+│   ├── add_user.py          # Add users to Firestore allowlist
+│   ├── deploy.sh            # Deploy to GCP Cloud Functions
+│   └── set_webhook.sh       # Configure Telegram webhook
 ├── src/
 │   ├── __init__.py
 │   ├── app.py
-│   ├── main.py
+│   ├── main.py              # CLI entry point
 │   ├── agents/
 │   │   ├── __init__.py
 │   │   ├── coordinator.py
 │   │   ├── data_fetcher.py
 │   │   ├── analyzer.py
 │   │   ├── recommender.py
-│   │   └── technical_analyzer.py  # Technical analysis agent
+│   │   └── technical_analyzer.py
+│   ├── telegram_bot/
+│   │   ├── __init__.py
+│   │   ├── bot.py           # Bot application setup
+│   │   ├── handlers.py      # Message handlers
+│   │   ├── firestore_client.py  # Firestore operations
+│   │   └── rate_limiter.py  # Rate limiting
 │   └── tools/
 │       ├── __init__.py
 │       ├── stock_tools.py
 │       ├── options_tools.py
 │       ├── analysis_tools.py
 │       ├── formatting_tools.py
-│       ├── strategy_tools.py      # Main workflow + layered strategy
-│       └── technical_tools.py     # RSI, MACD, SMA, volume analysis
+│       ├── strategy_tools.py
+│       └── technical_tools.py
 ├── tasks/
 │   ├── prd-covered-call-strategist.md
+│   ├── prd-messaging-frontend.md
 │   └── tasks-covered-call-strategist.md
 └── tests/
     ├── __init__.py
@@ -417,3 +430,105 @@ covered-call-strategist/
    - Shows table with contracts per strike level
 
 ### Tests Status: 26 passed
+
+---
+
+## Telegram Bot Integration (Latest)
+
+### Implementation Complete ✅
+
+Added Telegram bot frontend so users can interact with the covered call strategist via messaging.
+
+#### Architecture
+
+```
+┌─────────────┐     ┌─────────────────┐     ┌──────────────────┐
+│  Telegram   │────▶│  GCP Cloud      │────▶│  Covered Call    │
+│  Webhook    │     │  Function       │     │  Strategy Agent  │
+└─────────────┘     └────────┬────────┘     └──────────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │    Firestore    │
+                    │  • Allowlist    │
+                    │  • History      │
+                    │  • Rate Limits  │
+                    └─────────────────┘
+```
+
+#### Files Created
+
+| File | Description |
+|------|-------------|
+| `src/telegram_bot/bot.py` | Bot application and webhook processing |
+| `src/telegram_bot/handlers.py` | Message handlers (start, help, clear, analyze) |
+| `src/telegram_bot/firestore_client.py` | Firestore operations for users and conversations |
+| `src/telegram_bot/rate_limiter.py` | Token bucket rate limiter (10 req/min) |
+| `cloud_function/main.py` | GCP Cloud Function entry point |
+| `scripts/run_local.py` | Local development (polling mode) |
+| `scripts/add_user.py` | Add users to allowlist |
+| `scripts/deploy.sh` | Deploy to GCP Cloud Functions |
+| `scripts/set_webhook.sh` | Configure Telegram webhook |
+
+#### Features
+
+- **Allowlist Authentication**: Only pre-approved Telegram users can use the bot
+- **Persistent History**: Conversation context stored in Firestore per user
+- **Rate Limiting**: 10 requests per minute per user
+- **Smart Parsing**: Understands multiple input formats ("AAPL 500", "500 shares of AAPL", etc.)
+- **Long Message Splitting**: Automatically splits responses > 4000 chars
+
+#### Deployment Steps
+
+1. **Create Telegram Bot**
+   ```bash
+   # Message @BotFather on Telegram
+   /newbot
+   # Follow prompts, save the token
+   ```
+
+2. **Set Up GCP**
+   ```bash
+   # Create project and enable APIs
+   gcloud projects create my-covered-call-bot
+   gcloud services enable cloudfunctions.googleapis.com
+   gcloud services enable firestore.googleapis.com
+
+   # Create Firestore database
+   gcloud firestore databases create --location=us-central1
+   ```
+
+3. **Configure Environment**
+   ```bash
+   export GCP_PROJECT_ID=my-covered-call-bot
+   export TELEGRAM_BOT_TOKEN=your-bot-token
+   export GOOGLE_API_KEY=your-google-ai-key
+   ```
+
+4. **Add Users to Allowlist**
+   ```bash
+   python scripts/add_user.py "+1234567890" --telegram-id 123456789 --name "John"
+   ```
+
+5. **Deploy**
+   ```bash
+   ./scripts/deploy.sh
+   ./scripts/set_webhook.sh <function-url>
+   ```
+
+6. **Test**
+   - Open Telegram and message your bot
+   - Send: "AAPL 500 shares"
+
+#### Local Development
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up local env
+cp .env.example .env
+# Edit .env with your tokens
+
+# Run in polling mode (no webhook needed)
+python scripts/run_local.py
+```
