@@ -6,15 +6,14 @@ description: Create a PRD markdown file from a feature idea or requirement. Use 
 # Create PRD
 
 ## Workflow
-1) Locate ADR summary rules (search for ADR-0001 or "ADR summary rules") if they exist; ensure the PRD aligns. If none are found, proceed without them.
-2) Ask 3-5 clarifying questions max.
+1) Ask 3-5 clarifying questions max.
    - Number questions (1, 2, 3...)
    - Provide options A/B/C (add D if helpful) for each
    - Optimize for what/why/scope/success, not implementation details
-3) Wait for the user's answers. Do not draft the PRD before answers arrive.
-4) Generate a PRD in Markdown using the structure in [reference.md](reference.md).
-5) Save as `/tasks/prd-[feature-name].md` using a concise kebab-case slug for the feature name.
-6) Do not start implementation.
+2) Wait for the user's answers. Do not draft the PRD before answers arrive.
+3) Generate a PRD in Markdown using the structure in [reference.md](reference.md).
+4) Save as `/tasks/prd-[feature-name].md` using a concise kebab-case slug for the feature name.
+5) Do not start implementation.
 
 ## Output contract
 - The PRD is suitable for a junior developer.
